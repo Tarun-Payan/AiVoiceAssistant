@@ -1,103 +1,177 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mic, MicOff, Loader2 } from 'lucide-react';
+import axios from 'axios';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [messages, setMessages] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    if (messages.length > 0) {
+      r.start();
+      setIsListening(true)
+    }
+  }, [messages])
+
+
+  let SpeechRecognition = null;
+  let synth = null;
+
+  if (typeof window != "undefined") {
+    SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    synth = window.speechSynthesis;
+  }
+
+  if (!SpeechRecognition || !synth) {
+    console.error("SpeechRecognition is not supported in this browser.");
+  }
+
+  let r;
+  if (typeof window !== 'undefined') {
+    r = new SpeechRecognition();
+    r.continuous = false;
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+    r.lang = "hi-IN"
+
+    r.onstart = function () {
+      console.log("Speech recognition started");
+    };
+
+    r.onresult = async function (event) {
+      // console.log("Speech recognition result");
+      const transcript = event.results[0][0].transcript;
+      // console.log("Transcript:", transcript);
+      setIsListening(false)
+
+      // console.log(messages)
+      const message = messages + transcript + "\n";
+
+      const result = await axios.post("/generate-ai-response", { userMessage: message });
+      // console.log(result)
+      console.log(result.data.messages)
+
+      // const aiVoiceRes = await axios.post("/generate-ai-tts", { userMessage: result.data.messages })
+      // const bufferVoice = aiVoiceRes.data.messages.data;
+
+      const utterance = new SpeechSynthesisUtterance(result.data.messages);
+      utterance.lang = 'hi-IN';
+      utterance.voiceURI = 'Microsoft Kalpana - Hindi (India)';
+      utterance.name = 'Microsoft Kalpana - Hindi (India)';
+      utterance.localService = true;
+      utterance.default = false;
+      synth.speak(utterance);
+
+      utterance.onend = () => {
+        const aimessage = message + result.data.messages + "\n";
+        // console.log(aimessage)
+        setMessages(aimessage)
+      }
+    };
+
+    r.onend = () => {
+      // console.log("Speech recognition ended");
+      setIsListening(false)
+    }
+  }
+
+  const toggleListening = () => {
+    setIsListening(!isListening);
+    if (!isListening) {
+      setIsProcessing(true);
+      // Simulate processing for demo
+      setTimeout(() => {
+        setIsProcessing(false);
+        r.start();
+      }, 2000);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+            AI Voice Assistant
+          </h1>
+          <p className="text-gray-400 mt-2">Your intelligent voice companion</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Chat Container */}
+        <div className="bg-gray-800/50 rounded-2xl p-4 h-[60vh] overflow-y-auto mb-8 backdrop-blur-sm">
+          <AnimatePresence>
+            {messages?.split('\n').filter(msg => msg.trim()).map((message, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className={`flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'} mb-4`}
+              >
+                <div
+                  className={`max-w-[80%] rounded-2xl p-4 ${index % 2 === 0
+                    ? 'bg-blue-600/20 border border-blue-400/20'
+                    : 'bg-purple-600/20 border border-purple-500/20'
+                    }`}
+                >
+                  <p className="text-gray-200">{message}</p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        {/* Voice Control */}
+        <div className="flex justify-center">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleListening}
+            className={`relative p-6 rounded-full ${isListening
+              ? 'bg-red-500 hover:bg-red-600'
+              : 'bg-blue-500 hover:bg-blue-600'
+              } transition-colors duration-200`}
+          >
+            {isProcessing ? (
+              <Loader2 className="w-8 h-8 animate-spin" />
+            ) : isListening ? (
+              <MicOff className="w-8 h-8" />
+            ) : (
+              <Mic className="w-8 h-8" />
+            )}
+            {isListening && (
+              <motion.div
+                className="absolute inset-0 rounded-full border-2 border-red-500"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [1, 0.5, 1],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+            )}
+          </motion.button>
+        </div>
+
+        {/* Status Indicator */}
+        <div className="text-center mt-4">
+          <p className="text-gray-400">
+            {isProcessing
+              ? 'Processing...'
+              : isListening
+                ? 'Listening...'
+                : 'Click the microphone to start'}
+          </p>
+        </div>
+      </div>
+    </main>
   );
 }

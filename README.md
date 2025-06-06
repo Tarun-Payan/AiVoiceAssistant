@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# AI Voice Assistant
+
+A modern, interactive AI Voice Assistant built with Next.js, React, and browser Speech APIs. This project allows users to interact with an AI using voice commands and receive spoken responses.
+
+## Features
+
+- **Voice Recognition:** Uses the browser's SpeechRecognition API to capture user speech.
+- **AI Integration:** Sends user queries to an AI backend for intelligent responses.
+- **Text-to-Speech:** Uses the browser's SpeechSynthesis API to speak AI responses aloud.
+<!-- - **Multi-language Support:** Easily switch between voices and languages (e.g., Microsoft Zira for English, Microsoft Kalpana for Hindi). -->
+- **Modern UI:** Clean, animated chat interface with microphone controls and status indicators.
+
+## Prerequisites
+
+- Node.js (v16 or higher recommended)
+- npm or yarn
+- A Chromium-based browser (Chrome, Edge) for best voice support
+- (Optional) Windows OS for Microsoft voices like Zira and Kalpana
 
 ## Getting Started
 
-First, run the development server:
+1. **Clone the repository:**
+   ```bash
+   git clone <your-repo-url>
+   cd AiVoiceAssistant
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+4. **Open your browser:**
+   Visit [http://localhost:3000](http://localhost:3000) to use the AI Voice Assistant.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Usage
 
-## Learn More
+- Click the microphone button to start speaking.
+- The assistant will listen, process your query, and respond with both text and speech.
+- The chat interface displays the conversation history.
+- The assistant can speak in Hindi (using Microsoft Kalpana) or English (using Microsoft Zira) depending on configuration.
 
-To learn more about Next.js, take a look at the following resources:
+<!-- ## Configuration -->
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+<!-- - To change the speaking language/voice, modify the relevant section in `app/page.js`:
+  - For Hindi: Use `Microsoft Kalpana - Hindi (India)` and set `lang` to `hi-IN`.
+  - For English: Use `Microsoft Zira - English (United States)` and set `lang` to `en-US`.
+- Ensure the desired voice is installed and available on your system. -->
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
+- SpeechRecognition and SpeechSynthesis APIs work best in Chromium-based browsers.
+- Some voices (like Microsoft Kalpana) are only available on Windows.
+- If a specific voice is not found, the browser will use the default voice.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is for educational and personal use. Feel free to modify and enhance it for your needs.
